@@ -99,6 +99,33 @@ def genericSearch(problem, i):
         finalPath = currentPath.pop()  # Add to final path.
     return finalPath
 
+def genericSearch2(problem, heuristic):
+    """Search using a priority queue — used for UCS and A*."""
+    
+    open = util.PriorityQueue()      # Stores states to expand, ordered by cost
+    currPath = util.PriorityQueue()  # Stores paths, ordered by cost
+    closed = []                      # States already expanded
+    finalPath = []                   # Current best path
+
+    open.push(problem.getStartState(), 0)
+    currState = open.pop()
+
+    while not problem.isGoalState(currState):
+        if currState not in closed:
+            closed.append(currState)
+
+            for successor in problem.getSuccessors(currState):
+                pathCost = problem.getCostOfActions(finalPath + [successor[1]])
+                if heuristic is not None:
+                    pathCost += heuristic(successor[0], problem)
+                if successor[0] not in closed:
+                    open.push(successor[0], pathCost)
+                    currPath.push(finalPath + [successor[1]], pathCost)
+
+        currState = open.pop()
+        finalPath = currPath.pop()
+
+    return finalPath
     
 def depthFirstSearch(problem: SearchProblem):
     """
