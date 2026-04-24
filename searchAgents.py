@@ -458,8 +458,46 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
+    "Haris Part"
+    foodList = foodGrid.asList()
 
-    return 0
+    # No food → goal
+    if not foodList:
+        return 0
+
+    # Cache distances
+    if 'mazeDistances' not in problem.heuristicInfo:
+        problem.heuristicInfo['mazeDistances'] = {}
+
+    cache = problem.heuristicInfo['mazeDistances']
+
+    # Helper to get cached maze distance
+    def getDist(p1, p2):
+        key = (p1, p2)
+        revKey = (p2, p1)
+
+        if key in cache:
+            return cache[key]
+        if revKey in cache:
+            return cache[revKey]
+
+        dist = mazeDistance(p1, p2, problem.startingGameState)
+        cache[key] = dist
+        return dist
+
+    # 1. Distance from Pacman to closest food
+    minDist = min(getDist(position, food) for food in foodList)
+
+    # 2. Max distance between any two food dots
+    maxFoodDist = 0
+    for i in range(len(foodList)):
+        for j in range(i + 1, len(foodList)):
+            dist = getDist(foodList[i], foodList[j])
+            if dist > maxFoodDist:
+                maxFoodDist = dist
+
+    # Final heuristic
+    return minDist + maxFoodDist
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
