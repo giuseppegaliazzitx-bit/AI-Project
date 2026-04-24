@@ -461,43 +461,40 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     "Haris Part"
     foodList = foodGrid.asList()
 
-    # No food → goal
+    # No food left in list implies goal has been reached
     if not foodList:
         return 0
 
-    # Cache distances
+    # Cache maze distances to avoid recomputing (Optimization)
     if 'mazeDistances' not in problem.heuristicInfo:
         problem.heuristicInfo['mazeDistances'] = {}
 
     cache = problem.heuristicInfo['mazeDistances']
 
-    # Helper to get cached maze distance
     def getDist(p1, p2):
         key = (p1, p2)
-        revKey = (p2, p1)
+        reverseKey = (p2, p1)
 
+        # Use cached distance if stored already
         if key in cache:
             return cache[key]
-        if revKey in cache:
-            return cache[revKey]
+        elif reverseKey in cache:
+            return cache[reverseKey]
 
+        # Compute distance and store it
         dist = mazeDistance(p1, p2, problem.startingGameState)
         cache[key] = dist
         return dist
 
-    # 1. Distance from Pacman to closest food
-    minDist = min(getDist(position, food) for food in foodList)
+    maxDist = 0
 
-    # 2. Max distance between any two food dots
-    maxFoodDist = 0
-    for i in range(len(foodList)):
-        for j in range(i + 1, len(foodList)):
-            dist = getDist(foodList[i], foodList[j])
-            if dist > maxFoodDist:
-                maxFoodDist = dist
+    # Find farthest distance from Pacman to a food dot
+    for food in foodList:
+        dist = getDist(position, food)
+        if dist > maxDist:
+            maxDist = dist
 
-    # Final heuristic
-    return minDist + maxFoodDist
+    return maxDist
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
